@@ -1,0 +1,1430 @@
+<!-- Vue 3 CDN -->
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<!-- Axios for API calls -->
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+<style>
+    .vue-app {
+        padding: 20px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    .filters-section {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border: 1px solid #dee2e6;
+    }
+    .filters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+    }
+    .filter-group label {
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: #495057;
+    }
+    .filter-group input, .filter-group select {
+        padding: 8px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+    .filter-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s;
+    }
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+    }
+    .btn-primary:hover:not(:disabled) {
+        background-color: #0056b3;
+    }
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+    .btn-secondary:hover {
+        background-color: #545b62;
+    }
+    .btn:disabled {
+        background-color: #6c757d;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background: white;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .data-table th {
+        background-color: #f8f9fa;
+        padding: 12px 8px;
+        text-align: left;
+        font-weight: 600;
+        color: #495057;
+        border-bottom: 2px solid #dee2e6;
+        position: relative;
+    }
+    .data-table td {
+        padding: 10px 8px;
+        border-bottom: 1px solid #dee2e6;
+    }
+    .data-table tr:hover {
+        background-color: #f8f9fa;
+    }
+    .loading {
+        text-align: center;
+        padding: 40px;
+        color: #6c757d;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #6c757d;
+    }
+    .summary-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 2px;
+    }
+    .card {
+        background: white;
+        padding: 2px;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        text-align: center;
+        max-height: 100px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .card h3 {
+        font-size: 14px;
+        color: #6c757d;
+        margin-bottom: 5px;
+        margin-top: 5px;
+    }
+    .card p {
+        font-size: 24px;
+        font-weight: bold;
+        color: #495057;
+    }
+    .table-container {
+        overflow-x: auto;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    .error-message {
+        background-color: #f8d7da;
+        color: #721c24;
+        padding: 10px;
+        border-radius: 4px;
+        margin-bottom: 15px;
+        border: 1px solid #f5c6cb;
+    }
+    /* Custom multiselect styles */
+    .multiselect {
+        position: relative;
+        width: 100%;
+    }
+    .multiselect-input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 14px;
+        background: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .multiselect-input:after {
+        content: '▼';
+        font-size: 10px;
+        color: #6c757d;
+    }
+    .multiselect-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #ced4da;
+        border-top: none;
+        border-radius: 0 0 4px 4px;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 1000;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .multiselect-option {
+        padding: 8px 12px;
+        cursor: pointer;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .multiselect-option:hover {
+        background-color: #f8f9fa;
+    }
+    .multiselect-option.selected {
+        background-color: #e7f1ff;
+    }
+    .multiselect-checkbox {
+        width: 16px;
+        height: 16px;
+        border: 1px solid #ced4da;
+        border-radius: 2px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .multiselect-checkbox.checked {
+        background-color: #007bff;
+        border-color: #007bff;
+        color: white;
+    }
+    .multiselect-checkbox.checked:after {
+        content: '✓';
+        font-size: 12px;
+        font-weight: bold;
+    }
+    .multiselect-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        margin-top: 5px;
+    }
+    .multiselect-tag {
+        background: #007bff;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .multiselect-tag-remove {
+        cursor: pointer;
+        font-weight: bold;
+        padding: 0 2px;
+    }
+    .multiselect-tag-remove:hover {
+        opacity: 0.8;
+    }
+    /* Inline filter styles */
+    .inline-filter {
+        width: 100%;
+        padding: 4px 8px;
+        border: 1px solid #e9ecef;
+        border-radius: 3px;
+        font-size: 12px;
+        margin-top: 5px;
+        background-color: white;
+    }
+    .inline-filter:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+    }
+    .table-header {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .column-title {
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+    .filtered-count {
+        font-size: 12px;
+        color: #6c757d;
+        margin-top: 10px;
+        font-style: italic;
+    }
+    .numeric-filter {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+    }
+    .numeric-filter select {
+        flex: 0 0 60px;
+        padding: 4px;
+        border: 1px solid #e9ecef;
+        border-radius: 3px;
+        font-size: 11px;
+        background: white;
+    }
+    .numeric-filter input {
+        flex: 1;
+        padding: 4px 8px;
+        border: 1px solid #e9ecef;
+        border-radius: 3px;
+        font-size: 12px;
+    }
+    .uom-card {
+        background: white;
+        color: black;
+        border: 1px solid #e0e0e0;
+        position: relative;
+        overflow: hidden;
+        max-height: 100px;
+        padding: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .uom-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.02);
+        transform: rotate(45deg);
+        z-index: 1;
+    }
+
+    .uom-card h3 {
+        color: #333;
+        font-size: 12px;
+        margin-bottom: 6px;
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        font-weight: 600;
+        line-height: 1.2;
+    }
+
+    .uom-card-content {
+        position: relative;
+        z-index: 2;
+        max-height: 50px;
+        overflow-y: auto;
+        padding-right: 3px;
+    }
+
+    /* Custom scrollbar for UOM card */
+    .uom-card-content::-webkit-scrollbar {
+        width: 2px;
+    }
+
+    .uom-card-content::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 1px;
+    }
+
+    .uom-card-content::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 1px;
+    }
+
+    .uom-line {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 4px;
+        padding: 2px 4px;
+        background: rgba(0, 0, 0, 0.03);
+        border-radius: 4px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        font-size: 10px;
+        transition: all 0.2s ease;
+    }
+
+    .uom-line:hover {
+        background: rgba(0, 0, 0, 0.05);
+        border-color: rgba(0, 0, 0, 0.2);
+    }
+
+    .uom-info {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        flex: 1;
+    }
+
+    .uom-name {
+        font-weight: 500;
+        font-size: 9px;
+        color: #555;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 50px;
+    }
+
+    .uom-badge {
+        background: rgba(0, 0, 0, 0.1);
+        color: #333;
+        padding: 1px 4px;
+        border-radius: 8px;
+        font-size: 7px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .uom-value-container {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 1px;
+        flex: 1;
+        max-width: 60px;
+    }
+
+    .uom-value {
+        font-weight: 700;
+        font-size: 9px;
+        color: #222;
+        white-space: nowrap;
+    }
+
+    .uom-progress-bar {
+        width: 100%;
+        height: 2px;
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 1px;
+        overflow: hidden;
+    }
+
+    .uom-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #007bff, #0056b3);
+        border-radius: 1px;
+        transition: width 0.8s ease;
+    }
+
+    /* Compact footer for small card */
+    .uom-card-footer {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 4px;
+        padding: 3px 6px;
+        background: rgba(0, 0, 0, 0.03);
+        border-radius: 4px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        font-size: 9px;
+    }
+
+    .total-label {
+        font-size: 8px;
+        color: #666;
+        font-weight: 500;
+    }
+
+    .total-value {
+        font-size: 10px;
+        font-weight: 700;
+        color: #222;
+    }
+
+    /* Animation for card entrance */
+    .uom-card {
+        animation: cardEntrance 0.6s ease-out;
+    }
+
+    @keyframes cardEntrance {
+        0% {
+            opacity: 0;
+            transform: translateY(10px) scale(0.95);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    /* Show only top 2 UOM items in the compact view */
+    .uom-card-content .uom-line:nth-child(n+3) {
+        display: none;
+    }
+
+    /* Show more items on hover */
+    .uom-card:hover .uom-card-content {
+        max-height: 120px;
+    }
+
+    .uom-card:hover .uom-card-content .uom-line {
+        display: flex;
+    }
+
+    /* Responsive design for very small screens */
+    @media (max-width: 768px) {
+        .uom-line {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 2px;
+        }
+        
+        .uom-value-container {
+            max-width: none;
+            align-items: stretch;
+        }
+        
+        .uom-info {
+            justify-content: space-between;
+        }
+    }
+    /* Sales Person Summary Table Styles */
+    .summary-table-container {
+        margin-bottom: 20px;
+    }
+    .summary-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    .summary-table th {
+        background-color: #f8f9fa;
+        color: black;
+        padding: 12px 8px;
+        text-align: left;
+        font-weight: 600;
+    }
+    .summary-table td {
+        padding: 10px 8px;
+        border-bottom: 1px solid #dee2e6;
+    }
+    .summary-table tr:hover {
+        background-color: #f8f9fa;
+    }
+    .summary-table .total-row {
+        background-color: #e9ecef;
+        font-weight: bold;
+    }
+    /* Right alignment for numeric columns */
+    .numeric-column {
+        text-align: right !important;
+    }
+    .amount-column {
+        text-align: right !important;
+    }
+    .uom-card-content {
+        text-align: left;
+    }
+    .uom-line {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 5px;
+    }
+    .uom-line:last-child {
+        margin-bottom: 0;
+    }
+</style>
+
+<div id="vue-app" class="vue-app">
+    <h5>Sales Order Report</h5>
+    
+    <!-- Filters Section -->
+    <div class="filters-section">
+        <div class="filters-grid">
+            <div class="filter-group">
+                <label>Sales Person:</label>
+                <input type="text" v-model="filters.sales_person" placeholder="Enter sales person">
+            </div>
+            <div class="filter-group">
+                <label>Sales Team:</label>
+                <input type="text" v-model="filters.parent_sales_person" placeholder="Enter sales team">
+            </div>
+            <div class="filter-group">
+                <label>Series:</label>
+                <div class="multiselect">
+                    <div class="multiselect-input" @click="toggleDropdown('series')">
+                        [[ getDisplayText('series') ]]
+                    </div>
+                    <div v-if="showDropdowns.series" class="multiselect-dropdown">
+                        <div 
+                            v-for="series in seriesOptions" 
+                            :key="series"
+                            class="multiselect-option"
+                            @click="toggleSelection('series', series)"
+                        >
+                            <div 
+                                class="multiselect-checkbox" 
+                                :class="{ checked: isSelected('series', series) }"
+                            ></div>
+                            <span>[[ series ]]</span>
+                        </div>
+                    </div>
+                    <div v-if="filters.series.length > 0" class="multiselect-tags">
+                        <div v-for="selectedSeries in filters.series" :key="selectedSeries" class="multiselect-tag">
+                            [[ selectedSeries ]]
+                            <span class="multiselect-tag-remove" @click.stop="removeItem('series', selectedSeries)">×</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="filter-group">
+                <label>Status:</label>
+                <div class="multiselect">
+                    <div class="multiselect-input" @click="toggleDropdown('status')">
+                        [[ getDisplayText('status') ]]
+                    </div>
+                    <div v-if="showDropdowns.status" class="multiselect-dropdown">
+                        <div 
+                            v-for="status in statusOptions" 
+                            :key="status"
+                            class="multiselect-option"
+                            @click="toggleSelection('status', status)"
+                        >
+                            <div 
+                                class="multiselect-checkbox" 
+                                :class="{ checked: isSelected('status', status) }"
+                            ></div>
+                            <span>[[ status ]]</span>
+                        </div>
+                    </div>
+                    <div v-if="filters.status.length > 0" class="multiselect-tags">
+                        <div v-for="selectedStatus in filters.status" :key="selectedStatus" class="multiselect-tag">
+                            [[ selectedStatus ]]
+                            <span class="multiselect-tag-remove" @click.stop="removeItem('status', selectedStatus)">×</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="filter-group">
+                <label>From Date:</label>
+                <input type="date" v-model="filters.from_date">
+            </div>
+            <div class="filter-group">
+                <label>To Date:</label>
+                <input type="date" v-model="filters.to_date">
+            </div>
+        </div>
+        <div class="filter-actions">
+            <button class="btn btn-primary" @click="fetchData" :disabled="loading">
+                [[ loading ? 'Loading...' : 'Apply Filters' ]]
+            </button>
+            <button class="btn btn-secondary" @click="clearFilters">Clear Filters</button>
+        </div>
+    </div>
+
+    <!-- Error Message -->
+    <div v-if="error" class="error-message">
+        <strong>Error:</strong> [[ error ]]
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-cards" v-if="filteredData.length > 0">
+        <div class="card">
+            <h3>Total Orders</h3>
+            <p>[[ filteredData.length ]]</p>
+        </div>
+        <div class="card uom-card">
+            <h3>UOM Quantity</h3>
+            <div class="uom-card-content">
+                <div class="uom-line" v-for="uom in uomSummary.slice(0, 2)" :key="uom.uom">
+                    <div class="uom-info">
+                        <span class="uom-name" :title="uom.uom">[[ uom.uom ]]</span>
+                        <span class="uom-badge">[[ uomSummary.length > 0 ? ((uom.total / uomSummary.reduce((sum, item) => sum + item.total, 0)) * 100).toFixed(0) + '%' : '0%' ]]</span>
+                    </div>
+                    <div class="uom-value-container">
+                        <span class="uom-value">[[ formatCompactNumber(uom.total) ]]</span>
+                        <div class="uom-progress-bar">
+                            <div class="uom-progress-fill" :style="{ width: uomSummary.length > 0 ? ((uom.total / uomSummary.reduce((sum, item) => sum + item.total, 0)) * 100) + '%' : '0%' }"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="uom-card-footer">
+                <span class="total-label">Total</span>
+                <span class="total-value">[[ formatCompactNumber(totalQty) ]]</span>
+            </div>
+        </div>
+        <div class="card">
+            <h3>Total Amount</h3>
+            <p>₹[[ totalAmount.toLocaleString() ]]</p>
+        </div>
+        <div class="card">
+            <h3>Pending Amount</h3>
+            <p>₹[[ totalPendingAmount.toLocaleString() ]]</p>
+        </div>
+    </div>
+
+    <!-- Sales Person Summary Table -->
+    <div class="summary-table-container" v-if="salesPersonSummary.length > 0">
+        <h3>Sales Person Summary (Grouped by UOM)</h3>
+        <div class="table-container">
+            <table class="summary-table">
+                <thead>
+                    <tr>
+                        <th>Sales Person</th>
+                        <th>Stock UOM</th>
+                        <th class="numeric-column">Total Quantity</th>
+                        <th class="amount-column">Total Amount</th>
+                        <th class="numeric-column">Order Count</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(summary, index) in salesPersonSummary" :key="index">
+                        <td>[[ summary.sales_person || 'No Sales Person' ]]</td>
+                        <td>[[ summary.stock_uom || 'No UOM' ]]</td>
+                        <td class="numeric-column">[[ formatNumber(summary.total_qty) ]]</td>
+                        <td class="amount-column">₹[[ formatNumber(summary.total_amount) ]]</td>
+                        <td class="numeric-column">[[ summary.order_count ]]</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="2"><strong>Grand Total</strong></td>
+                        <td class="numeric-column"><strong>[[ formatNumber(salesPersonGrandTotal.total_qty) ]]</strong></td>
+                        <td class="amount-column"><strong>₹[[ formatNumber(salesPersonGrandTotal.total_amount) ]]</strong></td>
+                        <td class="numeric-column"><strong>[[ salesPersonGrandTotal.order_count ]]</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Detailed Data Table -->
+    <div class="table-container" v-if="data.length > 0">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h3>Detailed Sales Order Data ([[ filteredData.length ]] of [[ data.length ]] records)</h3>
+            <div class="filter-actions">
+                <button class="btn btn-secondary" @click="clearInlineFilters" style="padding: 6px 12px; font-size: 12px;">
+                    Clear Table Filters
+                </button>
+            </div>
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>
+                        <div class="table-header">
+                            <span class="column-title">Date</span>
+                            <input 
+                                type="text" 
+                                class="inline-filter" 
+                                v-model="inlineFilters.posting_date" 
+                                placeholder="Filter date..."
+                                @input="applyInlineFilters"
+                            >
+                        </div>
+                    </th>
+                    <th>
+                        <div class="table-header">
+                            <span class="column-title">Delivery Date</span>
+                            <input 
+                                type="text" 
+                                class="inline-filter" 
+                                v-model="inlineFilters.delivery_date" 
+                                placeholder="Filter delivery date..."
+                                @input="applyInlineFilters"
+                            >
+                        </div>
+                    </th>
+                    <th>
+                        <div class="table-header">
+                            <span class="column-title">Sales Order</span>
+                            <input 
+                                type="text" 
+                                class="inline-filter" 
+                                v-model="inlineFilters.name" 
+                                placeholder="Filter order..."
+                                @input="applyInlineFilters"
+                            >
+                        </div>
+                    </th>
+                    <th>
+                        <div class="table-header">
+                            <span class="column-title">Item Code</span>
+                            <input 
+                                type="text" 
+                                class="inline-filter" 
+                                v-model="inlineFilters.item_code" 
+                                placeholder="Filter item..."
+                                @input="applyInlineFilters"
+                            >
+                        </div>
+                    </th>
+                    <th>
+                        <div class="table-header">
+                            <span class="column-title">Qty</span>
+                            <div class="numeric-filter">
+                                <select v-model="numericOperators.qty.operator" @change="applyInlineFilters">
+                                    <option value="=">=</option>
+                                    <option value=">">></option>
+                                    <option value=">=">>=</option>
+                                    <option value="<"><</option>
+                                    <option value="<="><=</option>
+                                    <option value="!=">!=</option>
+                                </select>
+                                <input 
+                                    type="number" 
+                                    v-model="numericOperators.qty.value" 
+                                    placeholder="Value..."
+                                    @input="applyInlineFilters"
+                                >
+                            </div>
+                        </div>
+                    </th>
+                    <th>
+                        <div class="table-header">
+                            <span class="column-title">Delivered Qty</span>
+                            <div class="numeric-filter">
+                                <select v-model="numericOperators.delivered_qty.operator" @change="applyInlineFilters">
+                                    <option value="=">=</option>
+                                    <option value=">">></option>
+                                    <option value=">=">>=</option>
+                                    <option value="<"><</option>
+                                    <option value="<="><=</option>
+                                    <option value="!=">!=</option>
+                                </select>
+                                <input 
+                                    type="number" 
+                                    v-model="numericOperators.delivered_qty.value" 
+                                    placeholder="Value..."
+                                    @input="applyInlineFilters"
+                                >
+                            </div>
+                        </div>
+                    </th>
+                    <th>
+                        <div class="table-header">
+                            <span class="column-title">Pending Qty</span>
+                            <div class="numeric-filter">
+                                <select v-model="numericOperators.pending_qty.operator" @change="applyInlineFilters">
+                                    <option value="=">=</option>
+                                    <option value=">">></option>
+                                    <option value=">=">>=</option>
+                                    <option value="<"><</option>
+                                    <option value="<="><=</option>
+                                    <option value="!=">!=</option>
+                                </select>
+                                <input 
+                                    type="number" 
+                                    v-model="numericOperators.pending_qty.value" 
+                                    placeholder="Value..."
+                                    @input="applyInlineFilters"
+                                >
+                            </div>
+                        </div>
+                    </th>
+                    <th>
+                        <div class="table-header">
+                            <span class="column-title">Amount</span>
+                            <div class="numeric-filter">
+                                <select v-model="numericOperators.original_amount.operator" @change="applyInlineFilters">
+                                    <option value="=">=</option>
+                                    <option value=">">></option>
+                                    <option value=">=">>=</option>
+                                    <option value="<"><</option>
+                                    <option value="<="><=</option>
+                                    <option value="!=">!=</option>
+                                </select>
+                                <input 
+                                    type="number" 
+                                    v-model="numericOperators.original_amount.value" 
+                                    placeholder="Value..."
+                                    @input="applyInlineFilters"
+                                >
+                            </div>
+                        </div>
+                    </th>
+                    <th>
+                        <div class="table-header">
+                            <span class="column-title">Stock UOM</span>
+                            <input 
+                                type="text" 
+                                class="inline-filter" 
+                                v-model="inlineFilters.stock_uom" 
+                                placeholder="Filter UOM..."
+                                @input="applyInlineFilters"
+                            >
+                        </div>
+                    </th>
+                    <th>
+                        <div class="table-header">
+                            <span class="column-title">Customer</span>
+                            <input 
+                                type="text" 
+                                class="inline-filter" 
+                                v-model="inlineFilters.customer" 
+                                placeholder="Filter customer..."
+                                @input="applyInlineFilters"
+                            >
+                        </div>
+                    </th>
+                    <th>
+                        <div class="table-header">
+                            <span class="column-title">Sales Person</span>
+                            <input 
+                                type="text" 
+                                class="inline-filter" 
+                                v-model="inlineFilters.sales_person" 
+                                placeholder="Filter sales person..."
+                                @input="applyInlineFilters"
+                            >
+                        </div>
+                    </th>
+                    <th>
+                        <div class="table-header">
+                            <span class="column-title">Status</span>
+                            <input 
+                                type="text" 
+                                class="inline-filter" 
+                                v-model="inlineFilters.status" 
+                                placeholder="Filter status..."
+                                @input="applyInlineFilters"
+                            >
+                        </div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="(row, index) in filteredData" :key="index">
+                    <td>[[ formatDate(row.posting_date) ]]</td>
+                    <td>[[ formatDate(row.delivery_date) ]]</td>
+                    <td>[[ row.name ]]</td>
+                    <td>[[ row.item_code ]]</td>
+                    <td class="numeric-column">[[ formatNumber(row.qty) ]]</td>
+                    <td class="numeric-column">[[ formatNumber(row.delivered_qty) ]]</td>
+                    <td class="numeric-column">[[ formatNumber(row.pending_qty) ]]</td>
+                    <td class="amount-column">₹[[ formatNumber(row.original_amount) ]]</td>
+                    <td>[[ row.stock_uom || '-' ]]</td>
+                    <td>[[ row.customer || '-' ]]</td>
+                    <td>[[ row.sales_person || '-' ]]</td>
+                    <td>[[ row.status ]]</td>
+                </tr>
+            </tbody>
+        </table>
+        <div v-if="filteredData.length === 0 && data.length > 0" class="empty-state">
+            <p>No records match your table filters. Try adjusting your search terms.</p>
+        </div>
+    </div>
+
+    <div v-else-if="loading" class="loading">
+        <p>Loading data...</p>
+    </div>
+
+    <div v-else class="empty-state">
+        <p>No data found. Try adjusting your filters.</p>
+    </div>
+</div>
+
+<script>
+// Wait for the DOM to be fully loaded
+document.addEventListener('DOMContentLoaded', function() {
+    const { createApp } = Vue;
+    
+    // Function to get CSRF token from meta tag
+    function getCSRFToken() {
+        return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+    }
+
+    // Configure axios to include CSRF token in all requests
+    axios.defaults.headers.common['X-Frappe-CSRF-Token'] = getCSRFToken();
+    
+    createApp({
+        // Use custom delimiters to avoid conflict with Jinja2
+        delimiters: ['[[', ']]'],
+        data() {
+            return {
+                data: [],
+                filteredData: [],
+                loading: false,
+                error: null,
+                showDropdowns: {
+                    series: false,
+                    status: false
+                },
+                seriesOptions: [
+                    "SURATSO/25/.#",
+                    "PILAYA/25/.#", 
+                    "PDJO/25/.#",
+                    "PTSI/25/.#",
+                    "PTMTO/25/.#",
+                    "PSMTO/25/.#",
+                    "PHSO/25/.#",
+                    "SOHO/25/.#",
+                    "SOJV/25/.#",
+                    "PISE/25/.#",
+                    "PFSO/25/.#",
+                    "UNISO25/25/.#",
+                    "SP25/25/.#"
+                ],
+                statusOptions: [
+                    "Draft",
+                    "To Deliver and Bill",
+                    "To Bill",
+                    "To Deliver",
+                    "Completed",
+                    "Cancelled",
+                    "Closed"
+                ],
+                filters: {
+                    from_date: '',
+                    to_date: '',
+                    item_code: '',
+                    customer: '',
+                    sales_person: '',
+                    parent_sales_person: '',
+                    series: [],
+                    status: [],
+                    custom_item_status: '',
+                    delivery_status: ''
+                },
+                inlineFilters: {
+                    posting_date: '',
+                    delivery_date: '',
+                    name: '',
+                    item_code: '',
+                    stock_uom: '',
+                    customer: '',
+                    sales_person: '',
+                    status: ''
+                },
+                numericOperators: {
+                    qty: { operator: '=', value: '' },
+                    delivered_qty: { operator: '=', value: '' },
+                    pending_qty: { operator: '=', value: '' },
+                    original_amount: { operator: '=', value: '' }
+                }
+            }
+        },
+        computed: {
+            totalQty() {
+                return this.filteredData.reduce((sum, row) => sum + (parseFloat(row.qty) || 0), 0);
+            },
+            totalAmount() {
+                return this.filteredData.reduce((sum, row) => sum + (parseFloat(row.original_amount) || 0), 0);
+            },
+            totalPendingAmount() {
+                return this.filteredData.reduce((sum, row) => sum + (parseFloat(row.pending_amount) || 0), 0);
+            },
+            uomSummary() {
+                const uomMap = {};
+                
+                this.filteredData.forEach(row => {
+                    const uom = row.stock_uom || 'No UOM';
+                    const qty = parseFloat(row.qty) || 0;
+                    
+                    if (!uomMap[uom]) {
+                        uomMap[uom] = 0;
+                    }
+                    uomMap[uom] += qty;
+                });
+                
+                return Object.entries(uomMap)
+                    .map(([uom, total]) => ({ uom, total }))
+                    .sort((a, b) => b.total - a.total);
+            },
+            salesPersonSummary() {
+                const summaryMap = {};
+                
+                this.filteredData.forEach(row => {
+                    const salesPerson = row.sales_person || 'No Sales Person';
+                    const stockUom = row.stock_uom || 'No UOM';
+                    const key = `${salesPerson}|${stockUom}`;
+                    
+                    if (!summaryMap[key]) {
+                        summaryMap[key] = {
+                            sales_person: salesPerson,
+                            stock_uom: stockUom,
+                            total_qty: 0,
+                            total_amount: 0,
+                            order_count: 0
+                        };
+                    }
+                    
+                    summaryMap[key].total_qty += parseFloat(row.qty) || 0;
+                    summaryMap[key].total_amount += parseFloat(row.original_amount) || 0;
+                    summaryMap[key].order_count += 1;
+                });
+                
+                return Object.values(summaryMap).sort((a, b) => {
+                    if (a.sales_person !== b.sales_person) {
+                        return a.sales_person.localeCompare(b.sales_person);
+                    }
+                    return a.stock_uom.localeCompare(b.stock_uom);
+                });
+            },
+            salesPersonGrandTotal() {
+                return this.salesPersonSummary.reduce((total, item) => {
+                    total.total_qty += item.total_qty;
+                    total.total_amount += item.total_amount;
+                    total.order_count += item.order_count;
+                    return total;
+                }, { total_qty: 0, total_amount: 0, order_count: 0 });
+            }
+        },
+        mounted() {
+            console.log('Vue app mounted');
+            // Set default dates
+            const today = new Date();
+            const oneWeekAgo = new Date();
+            oneWeekAgo.setDate(today.getDate() - 7);
+            
+            this.filters.from_date = this.formatDateForInput(oneWeekAgo);
+            this.filters.to_date = this.formatDateForInput(today);
+            
+            this.fetchData();
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', this.handleClickOutside);
+        },
+        beforeUnmount() {
+            // Clean up event listener
+            document.removeEventListener('click', this.handleClickOutside);
+        },
+        methods: {
+            async fetchData() {
+                this.loading = true;
+                this.error = null;
+                try {
+                    // Clean filters - remove empty values
+                    const cleanFilters = {};
+                    for (const [key, value] of Object.entries(this.filters)) {
+                        if (value !== '' && value !== null && value !== undefined) {
+                            if ((key === 'series' || key === 'status') && Array.isArray(value) && value.length > 0) {
+                                // Convert array to comma-separated string
+                                cleanFilters[key] = value.join(',');
+                            } else {
+                                cleanFilters[key] = value;
+                            }
+                        }
+                    }
+
+                    console.log('Fetching data with filters:', cleanFilters);
+                    
+                    // Method 1: Using GET request (preferred for Frappe)
+                    const params = new URLSearchParams();
+                    for (const [key, value] of Object.entries(cleanFilters)) {
+                        if (value !== '') {
+                            params.append(key, value);
+                        }
+                    }
+                    
+                    const response = await axios.get(`/api/method/pranera_vue.pranera_vue.api.sales_order_api.get_sales_order_report?${params}`);
+                    
+                    console.log('Full API Response:', response.data);
+                    
+                    // Handle response data
+                    this.handleApiResponse(response.data);
+                    
+                } catch (error) {
+                    console.error('Error fetching data:', error);
+                    this.handleApiError(error);
+                } finally {
+                    this.loading = false;
+                    // Apply inline filters after data is loaded
+                    this.applyInlineFilters();
+                }
+            },
+            
+            handleApiResponse(responseData) {
+                if (responseData && responseData.message) {
+                    // Case 1: Direct data in message
+                    if (Array.isArray(responseData.message)) {
+                        this.data = responseData.message;
+                    } 
+                    // Case 2: Nested data structure
+                    else if (responseData.message.data && Array.isArray(responseData.message.data)) {
+                        this.data = responseData.message.data;
+                    }
+                    // Case 3: Triple nested structure
+                    else if (responseData.message.message && responseData.message.message.data) {
+                        this.data = responseData.message.message.data;
+                    }
+                    // Case 4: Success structure with data
+                    else if (responseData.message.success && responseData.message.data) {
+                        this.data = responseData.message.data;
+                    }
+                    else {
+                        console.warn('Unexpected API response structure:', responseData);
+                        this.data = [];
+                        this.error = 'Unexpected response format from server';
+                    }
+                } else {
+                    console.warn('No message in response:', responseData);
+                    this.data = [];
+                    this.error = 'No data received from server';
+                }
+                
+                console.log('Final data set:', this.data);
+                // Initialize filtered data
+                this.filteredData = [...this.data];
+            },
+            
+            applyInlineFilters() {
+                if (this.data.length === 0) {
+                    this.filteredData = [];
+                    return;
+                }
+
+                this.filteredData = this.data.filter(row => {
+                    // Check text filters
+                    for (const [key, filterValue] of Object.entries(this.inlineFilters)) {
+                        if (filterValue && filterValue.trim() !== '') {
+                            const rowValue = row[key] || '';
+                            const searchTerm = filterValue.toLowerCase().trim();
+                            const cellValue = String(rowValue).toLowerCase();
+                            
+                            // For date fields, allow partial matching
+                            if (['posting_date', 'delivery_date'].includes(key)) {
+                                const formattedDate = this.formatDateForFilter(rowValue);
+                                if (!formattedDate.includes(searchTerm)) {
+                                    return false;
+                                }
+                            }
+                            // For text fields, use contains matching
+                            else {
+                                if (!cellValue.includes(searchTerm)) {
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Check numeric filters with operators
+                    for (const [key, filter] of Object.entries(this.numericOperators)) {
+                        if (filter.value !== '' && filter.value !== null) {
+                            const rowValue = parseFloat(row[key]) || 0;
+                            const filterValue = parseFloat(filter.value);
+                            
+                            if (isNaN(filterValue)) continue;
+                            
+                            let passes = false;
+                            switch (filter.operator) {
+                                case '=':
+                                    passes = rowValue === filterValue;
+                                    break;
+                                case '>':
+                                    passes = rowValue > filterValue;
+                                    break;
+                                case '>=':
+                                    passes = rowValue >= filterValue;
+                                    break;
+                                case '<':
+                                    passes = rowValue < filterValue;
+                                    break;
+                                case '<=':
+                                    passes = rowValue <= filterValue;
+                                    break;
+                                case '!=':
+                                    passes = rowValue !== filterValue;
+                                    break;
+                                default:
+                                    passes = true;
+                            }
+                            
+                            if (!passes) {
+                                return false;
+                            }
+                        }
+                    }
+                    
+                    return true;
+                });
+            },
+            
+            clearInlineFilters() {
+                this.inlineFilters = {
+                    posting_date: '',
+                    delivery_date: '',
+                    name: '',
+                    item_code: '',
+                    stock_uom: '',
+                    customer: '',
+                    sales_person: '',
+                    status: ''
+                };
+                this.numericOperators = {
+                    qty: { operator: '=', value: '' },
+                    delivered_qty: { operator: '=', value: '' },
+                    pending_qty: { operator: '=', value: '' },
+                    original_amount: { operator: '=', value: '' }
+                };
+                this.filteredData = [...this.data];
+            },
+            
+            formatDateForFilter(dateString) {
+                if (!dateString) return '';
+                try {
+                    const date = new Date(dateString);
+                    return date.toLocaleDateString('en-IN').toLowerCase();
+                } catch (e) {
+                    return String(dateString).toLowerCase();
+                }
+            },
+            
+            handleApiError(error) {
+                if (error.response && error.response.data) {
+                    const errorData = error.response.data;
+                    if (errorData._server_messages) {
+                        try {
+                            const serverMessages = JSON.parse(errorData._server_messages);
+                            if (Array.isArray(serverMessages) && serverMessages.length > 0) {
+                                const firstMessage = JSON.parse(serverMessages[0]);
+                                this.error = firstMessage.message || 'Server error occurred';
+                            } else {
+                                this.error = errorData.exception || 'Unknown server error';
+                            }
+                        } catch (e) {
+                            this.error = errorData.exception || 'Error parsing server response';
+                        }
+                    } else {
+                        this.error = errorData.exception || error.message || 'Network error occurred';
+                    }
+                } else {
+                    this.error = error.message || 'Network error occurred';
+                }
+                this.data = [];
+                this.filteredData = [];
+            },
+            
+            clearFilters() {
+                this.filters = {
+                    from_date: '',
+                    to_date: '',
+                    item_code: '',
+                    customer: '',
+                    sales_person: '',
+                    parent_sales_person: '',
+                    series: [],
+                    status: [],
+                    custom_item_status: '',
+                    delivery_status: ''
+                };
+                
+                // Reset to default dates
+                const today = new Date();
+                const oneWeekAgo = new Date();
+                oneWeekAgo.setDate(today.getDate() - 7);
+                
+                this.filters.from_date = this.formatDateForInput(oneWeekAgo);
+                this.filters.to_date = this.formatDateForInput(today);
+                
+                this.fetchData();
+            },
+            
+            // Generic multiselect methods
+            toggleDropdown(type) {
+                // Close all other dropdowns first
+                Object.keys(this.showDropdowns).forEach(key => {
+                    if (key !== type) {
+                        this.showDropdowns[key] = false;
+                    }
+                });
+                this.showDropdowns[type] = !this.showDropdowns[type];
+            },
+            
+            toggleSelection(type, item) {
+                const index = this.filters[type].indexOf(item);
+                if (index > -1) {
+                    this.filters[type].splice(index, 1);
+                } else {
+                    this.filters[type].push(item);
+                }
+            },
+            
+            removeItem(type, item) {
+                const index = this.filters[type].indexOf(item);
+                if (index > -1) {
+                    this.filters[type].splice(index, 1);
+                    // Refresh data when removing an item
+                    this.fetchData();
+                }
+            },
+            
+            isSelected(type, item) {
+                return this.filters[type].includes(item);
+            },
+            
+            getDisplayText(type) {
+                const items = this.filters[type];
+                if (items.length === 0) {
+                    return `Select ${type}...`;
+                } else if (items.length === 1) {
+                    return items[0];
+                } else {
+                    return `${items.length} ${type} selected`;
+                }
+            },
+            
+            handleClickOutside(event) {
+                if (!event.target.closest('.multiselect')) {
+                    // Close all dropdowns
+                    Object.keys(this.showDropdowns).forEach(key => {
+                        this.showDropdowns[key] = false;
+                    });
+                }
+            },
+            
+            formatDate(dateString) {
+                if (!dateString) return '-';
+                try {
+                    return new Date(dateString).toLocaleDateString('en-IN');
+                } catch (e) {
+                    return dateString;
+                }
+            },
+            
+            formatDateForInput(date) {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            },
+            
+            formatNumber(value) {
+                if (value === null || value === undefined) return '0';
+                const num = parseFloat(value);
+                return isNaN(num) ? '0' : num.toLocaleString('en-IN', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            },
+
+            formatCompactNumber(value) {
+                if (value === null || value === undefined) return '0';
+                const num = parseFloat(value);
+                if (isNaN(num)) return '0';
+                
+                if (num >= 1000000) {
+                    return (num / 1000000).toFixed(1) + 'M';
+                } else if (num >= 1000) {
+                    return (num / 1000).toFixed(1) + 'K';
+                } else {
+                    return num.toLocaleString('en-IN', {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0
+                    });
+                }
+            }
+        }
+    }).mount('#vue-app');
+});
+</script>

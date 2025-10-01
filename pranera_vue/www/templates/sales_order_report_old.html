@@ -1,0 +1,352 @@
+<!-- Vue 3 CDN -->
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<!-- Axios for API calls -->
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<style>
+    .vue-app {
+        padding: 20px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    .filters-section {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border: 1px solid #dee2e6;
+    }
+    .filters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+    }
+    .filter-group label {
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: #495057;
+    }
+    .filter-group input, .filter-group select {
+        padding: 8px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+    .filter-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s;
+    }
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+    }
+    .btn-primary:hover:not(:disabled) {
+        background-color: #0056b3;
+    }
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+    .btn-secondary:hover {
+        background-color: #545b62;
+    }
+    .btn:disabled {
+        background-color: #6c757d;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background: white;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .data-table th {
+        background-color: #f8f9fa;
+        padding: 12px 8px;
+        text-align: left;
+        font-weight: 600;
+        color: #495057;
+        border-bottom: 2px solid #dee2e6;
+    }
+    .data-table td {
+        padding: 10px 8px;
+        border-bottom: 1px solid #dee2e6;
+    }
+    .data-table tr:hover {
+        background-color: #f8f9fa;
+    }
+    .loading {
+        text-align: center;
+        padding: 40px;
+        color: #6c757d;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #6c757d;
+    }
+    .summary-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    .card {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    .card h3 {
+        font-size: 14px;
+        color: #6c757d;
+        margin-bottom: 8px;
+    }
+    .card p {
+        font-size: 24px;
+        font-weight: bold;
+        color: #495057;
+    }
+    .table-container {
+        overflow-x: auto;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+</style>
+
+
+
+<div id="vue-app" class="vue-app">
+    <h5>Sales Order Report</h5>
+    
+    <!-- Filters Section -->
+    <div class="filters-section">
+        <!-- <h3>Filters</h3> -->
+        <div class="filters-grid">
+            <div class="filter-group">
+                <label>From Date:</label>
+                <input type="date" v-model="filters.from_date">
+            </div>
+            <div class="filter-group">
+                <label>To Date:</label>
+                <input type="date" v-model="filters.to_date">
+            </div>
+            <div class="filter-group">
+                <label>Item Code:</label>
+                <input type="text" v-model="filters.item_code" placeholder="Enter item code">
+            </div>
+            <div class="filter-group">
+                <label>Sales Person:</label>
+                <input type="text" v-model="filters.sales_person" placeholder="Enter sales person">
+            </div>
+            <div class="filter-group">
+                <label>Item Status:</label>
+                <select v-model="filters.custom_item_status">
+                    <option value="">All Status</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
+            </div>
+        </div>
+        <div class="filter-actions">
+            <button class="btn btn-primary" @click="fetchData" :disabled="loading">
+                ${ loading ? 'Loading...' : 'Apply Filters' }
+            </button>
+            <button class="btn btn-secondary" @click="clearFilters">Clear Filters</button>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-cards" v-if="data.length > 0">
+        <div class="card">
+            <h3>Total Orders</h3>
+            <p>${ data.length }</p>
+        </div>
+        <div class="card">
+            <h3>Total Quantity</h3>
+            <p>${ totalQty.toLocaleString() }</p>
+        </div>
+        <div class="card">
+            <h3>Total Amount</h3>
+            <p>₹${ totalAmount.toLocaleString() }</p>
+        </div>
+        <div class="card">
+            <h3>Pending Amount</h3>
+            <p>₹${ totalPendingAmount.toLocaleString() }</p>
+        </div>
+    </div>
+
+    <!-- Data Table -->
+    <!-- Data Table -->
+    <div class="table-container">
+        <div v-if="data.length > 0">
+            <h3>Results (${ data.length } records)</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Delivery Date</th>
+                        <th>Sales Order</th>
+                        <th>Item Code</th>
+                        <th>Qty</th>
+                        <th>Delivered Qty</th>
+                        <th>Pending Qty</th>
+                        <th>Amount</th>
+                        <th>Customer</th>
+                        <th>Sales Person</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(row, index) in data" :key="index">
+                        <td>${ formatDate(row.posting_date) }</td>
+                        <td>${ formatDate(row.delivery_date) }</td>
+                        <td>${ row.name }</td>
+                        <td>${ row.item_code }</td>
+                        <td>${ formatNumber(row.qty) }</td>
+                        <td>${ formatNumber(row.delivered_qty) }</td>
+                        <td>${ formatNumber(row.pending_qty) }</td>
+                        <td>₹${ formatNumber(row.original_amount) }</td>
+                        <td>${ row.customer || '-' }</td>
+                        <td>${ row.sales_person || '-' }</td>
+                        <td>${ row.status }</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div v-else-if="loading" class="loading">
+            <p>Loading data...</p>
+        </div>
+
+        <div v-else class="empty-state">
+            <p>No data found. Try adjusting your filters.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+// Wait for the DOM to be fully loaded
+document.addEventListener('DOMContentLoaded', function() {
+    const { createApp } = Vue;
+    
+    createApp({
+        // Use different delimiters to avoid conflict with Jinja2
+        delimiters: ['${', '}'],
+        data() {
+            return {
+                data: [],
+                loading: false,
+                filters: {
+                    from_date: '',
+                    to_date: '',
+                    item_code: '',
+                    sales_person: '',
+                    custom_item_status: ''
+                }
+            }
+        },
+        computed: {
+            totalQty() {
+                return this.data.reduce((sum, row) => sum + (parseFloat(row.qty) || 0), 0);
+            },
+            totalAmount() {
+                return this.data.reduce((sum, row) => sum + (parseFloat(row.original_amount) || 0), 0);
+            },
+            totalPendingAmount() {
+                return this.data.reduce((sum, row) => sum + (parseFloat(row.pending_amount) || 0), 0);
+            }
+        },
+        mounted() {
+            console.log('Vue app mounted');
+            this.fetchData();
+        },
+        methods: {
+             async fetchData() {
+                this.loading = true;
+                try {
+                    // Clean filters - remove empty values
+                    const cleanFilters = {};
+                    for (const [key, value] of Object.entries(this.filters)) {
+                        if (value !== '') {
+                            cleanFilters[key] = value;
+                        }
+                    }
+
+                    console.log('Fetching data with filters:', cleanFilters);
+                    
+                    const response = await axios.get('/api/method/pranera_vue.pranera_vue.api.sales_order_api.get_sales_order_report', {
+                        params: cleanFilters
+                    });
+                    
+                    console.log('Full API Response:', response.data);
+                    console.log('Response message:', response.data.message);
+                    console.log('Response message.message:', response.data.message.data);
+                    // console.log('Response message.message.message:', response.data.message.message.message);
+                    
+                    // FIX: Handle the triple nested structure
+                    if (response.data && response.data.message && response.data.message.data ) {
+                        this.data = response.data.message.data;
+                        console.log('Data set to Vue (triple nested):', this.data);
+                    } else {
+                        this.data = [];
+                        console.warn('Unexpected API response structure:', response.data);
+                    }
+                } catch (error) {
+                    console.error('Error fetching data:', error);
+                    alert('Error fetching data. Please check console for details.');
+                    this.data = [];
+                } finally {
+                    this.loading = false;
+                }
+            },
+            
+            clearFilters() {
+                this.filters = {
+                    from_date: '',
+                    to_date: '',
+                    item_code: '',
+                    sales_person: '',
+                    custom_item_status: ''
+                };
+                this.fetchData();
+            },
+            
+            formatDate(dateString) {
+                if (!dateString) return '-';
+                try {
+                    return new Date(dateString).toLocaleDateString('en-IN');
+                } catch (e) {
+                    return dateString;
+                }
+            },
+            
+            formatNumber(value) {
+                if (value === null || value === undefined) return '0';
+                const num = parseFloat(value);
+                return isNaN(num) ? '0' : num.toLocaleString('en-IN', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            }
+        }
+    }).mount('#vue-app');
+});
+</script>
