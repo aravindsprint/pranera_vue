@@ -441,12 +441,69 @@ def get_sales_order_data(filters):
     print("Test query result for SKF items:", test_result)
     
     # Your main query
+    # query = """
+    #     SELECT
+    #         soi.item_code AS item_code,
+    #         soi.custom_commercial_name AS commercial_name,
+    #         soi.custom_color AS color,
+    #         soi.custom_width AS width,
+    #         soi.custom_item_status AS custom_item_status,
+    #         soi.qty AS qty,
+    #         soi.rate AS rate,
+    #         soi.amount AS original_amount,
+    #         COALESCE(soi.delivered_qty, 0) AS delivered_qty,
+    #         (soi.qty - COALESCE(soi.delivered_qty, 0)) AS pending_qty,
+    #         ROUND(
+    #             CASE 
+    #                 WHEN soi.qty > 0 THEN 
+    #                     (COALESCE(soi.delivered_qty, 0) / soi.qty) * 100 
+    #                 ELSE 0 
+    #             END, 2
+    #         ) AS delivered_qty_percent,
+    #         ROUND(
+    #             CASE 
+    #                 WHEN soi.qty > 0 THEN 
+    #                     ((soi.qty - COALESCE(soi.delivered_qty, 0)) / soi.qty) * 100 
+    #                 ELSE 0 
+    #             END, 2
+    #         ) AS pending_qty_percent,
+    #         (COALESCE(soi.delivered_qty, 0) * soi.rate) AS delivered_amount,
+    #         ((soi.qty - COALESCE(soi.delivered_qty, 0)) * soi.rate) AS pending_amount,
+    #         ROUND(
+    #             CASE 
+    #                 WHEN soi.amount > 0 THEN 
+    #                     (COALESCE(soi.delivered_qty, 0) * soi.rate / soi.amount) * 100 
+    #                 ELSE 0 
+    #             END, 2
+    #         ) AS amount_billed_percent,
+    #         soi.stock_uom AS stock_uom,
+    #         so.transaction_date AS posting_date,
+    #         so.customer AS customer,
+    #         st.sales_person,
+    #         sp.parent_sales_person,
+    #         so.name AS name,
+    #         so.naming_series AS series,
+    #         so.delivery_date AS delivery_date,
+    #         so.delivery_status AS delivery_status,
+    #         so.status AS status
+    #     FROM 
+    #         `tabSales Order Item` AS soi
+    #     LEFT JOIN 
+    #         `tabSales Order` AS so
+    #     ON 
+    #         so.name = soi.parent
+    #     LEFT JOIN `tabSales Team` st on st.parent = so.name
+    #     LEFT JOIN `tabSales Person` sp on st.sales_person = sp.name    
+    #     WHERE 
+    #         so.docstatus = 1
+    # """
+
     query = """
         SELECT
             soi.item_code AS item_code,
-            soi.custom_commercial_name AS commercial_name,
-            soi.custom_color AS color,
-            soi.custom_width AS width,
+            soi.commercial_name AS commercial_name,
+            soi.color AS color,
+            soi.width AS width,
             soi.custom_item_status AS custom_item_status,
             soi.qty AS qty,
             soi.rate AS rate,
